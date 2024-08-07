@@ -1,29 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Web App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        window.Telegram.WebApp.ready();
-        
-        // Извлечение параметров из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const telegramId = urlParams.get('telegram_id');
-        
-        console.log("Telegram ID:", telegramId);
-    </script>
+    <title>Card Display</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-    <h1>Привет, это ваше веб-приложение!</h1>
-    <button onclick="sendData()">Отправить данные</button>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        function sendData() {
-            const data = { key: 'value', telegram_id: telegramId };
-            window.Telegram.WebApp.sendData(JSON.stringify(data));
+        // Основные настройки сцены, камеры и рендера
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Создание 3D карточки
+        const geometry = new THREE.PlaneGeometry(2, 3); // Измените размеры при необходимости
+        const frontTexture = new THREE.TextureLoader().load('@Model.FrontImageUrl');
+        const backTexture = new THREE.TextureLoader().load('@Model.BackImageUrl');
+
+        const materials = [
+            new THREE.MeshBasicMaterial({ map: frontTexture }),
+            new THREE.MeshBasicMaterial({ map: backTexture })
+        ];
+
+        const card = new THREE.Mesh(geometry, materials);
+        card.geometry.faces[0].materialIndex = 0; // Лицевая сторона
+        card.geometry.faces[1].materialIndex = 1; // Обратная сторона
+
+        scene.add(card);
+
+        camera.position.z = 5;
+
+        // Настройка вращения с помощью мыши
+        let isDragging = false;
+        let previousMousePosition = {
+            x: 0,
+            y: 0
+        };
+
+        document.addEventListener('mousedown', (e) => {
+            isDragging = true;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                let deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+
+                let deltaRotationQuaternion = new THREE.Quaternion()
+                    .setFromEuler(new THREE.Euler(
+                        toRadians(deltaMove.y * 1),
+                        toRadians(deltaMove.x * 1),
+                        0,
+                        'XYZ'
+                    ));
+
+                card.quaternion.multiplyQuaternions(deltaRotationQuaternion, card.quaternion);
+
+                previousMousePosition = {
+                    x: e.offsetX,
+                    y: e.offsetY
+                };
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            isDragging = false;
+        });
+
+        function toRadians(angle) {
+            return angle * (Math.PI / 180);
         }
+
+        // Анимация
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
+
