@@ -17,10 +17,20 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        // Получение параметров из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const frontImageUrl = urlParams.get('frontImageUrl');
+        const backImageUrl = urlParams.get('backImageUrl');
+
+        if (!frontImageUrl || !backImageUrl) {
+            alert('Missing image URLs');
+            throw new Error('Missing image URLs');
+        }
+
         // Создание 3D карточки
         const geometry = new THREE.PlaneGeometry(2, 3); // Измените размеры при необходимости
-        const frontTexture = new THREE.TextureLoader().load('https://api.telegram.org/file/bot6470546829:AAF-c_ZRtdPwHJTvGVrm_jBD5KNcfM01lsw/photos/file_34');
-        const backTexture = new THREE.TextureLoader().load('https://api.telegram.org/file/bot6470546829:AAF-c_ZRtdPwHJTvGVrm_jBD5KNcfM01lsw/photos/file_34');
+        const frontTexture = new THREE.TextureLoader().load(frontImageUrl);
+        const backTexture = new THREE.TextureLoader().load(backImageUrl);
 
         const materials = [
             new THREE.MeshBasicMaterial({ map: frontTexture, side: THREE.FrontSide }),
