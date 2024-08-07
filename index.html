@@ -23,14 +23,11 @@
         const backTexture = new THREE.TextureLoader().load('https://api.telegram.org/file/bot6470546829:AAF-c_ZRtdPwHJTvGVrm_jBD5KNcfM01lsw/photos/file_34');
 
         const materials = [
-            new THREE.MeshBasicMaterial({ map: frontTexture }),
-            new THREE.MeshBasicMaterial({ map: backTexture })
+            new THREE.MeshBasicMaterial({ map: frontTexture, side: THREE.FrontSide }),
+            new THREE.MeshBasicMaterial({ map: backTexture, side: THREE.BackSide })
         ];
 
         const card = new THREE.Mesh(geometry, materials);
-        card.geometry.faces[0].materialIndex = 0; // Лицевая сторона
-        card.geometry.faces[1].materialIndex = 1; // Обратная сторона
-
         scene.add(card);
 
         camera.position.z = 5;
@@ -94,4 +91,3 @@
     </script>
 </body>
 </html>
-
